@@ -6,15 +6,89 @@ int extraMemoryAllocated;
 
 // implements heap sort
 // extraMemoryAllocated counts bytes of memory allocated
-void heapSort(int arr[], int n)
+void heapify(int arr[], int n, int i)
 {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+
+    if (l < n && arr[l] > arr[largest])
+        largest = l;
+
+    if (r < n && arr[r] > arr[largest])
+        largest = r;
+
+    if (largest != i)
+    {
+        int tmp = arr[i];
+        arr[i] = arr[largest];
+        arr[largest] = tmp;
+        extraMemoryAllocated += sizeof(tmp);
+        heapify(arr, n, largest);
+    }
 }
 
+void heapSort(int arr[], int n)
+{
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+
+    for (int i = n - 1; i >= 0; i--)
+    {
+        int tmp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = tmp;
+        extraMemoryAllocated += sizeof(tmp);
+        heapify(arr, i, 0);
+    }
+}
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
+    if (l >= r) return;
+
+    int mid = l + (r - l) / 2;
+	mergeSort(pData, l, mid);
+    mergeSort(pData, mid + 1, r);
+
+    int n1 = mid - l + 1;
+    int n2 = r - mid;
+
+    int *L = (int *)malloc(sizeof(int) * n1);
+    int *R = (int *)malloc(sizeof(int) * n2);
+    extraMemoryAllocated += sizeof(int) * (n1 + n2);
+
+    for (int i = 0; i < n1; i++)
+        L[i] = pData[l + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = pData[mid + 1 + j];
+
+    int i = 0, j = 0, k = l;
+
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            pData[k++] = L[i++];
+            extraMemoryAllocated += sizeof(int);
+        }
+        else {
+            pData[k++] = R[j++];
+            extraMemoryAllocated += sizeof(int);
+        }
+    }
+
+    while (i < n1) {
+        pData[k++] = L[i++];
+        extraMemoryAllocated += sizeof(int);
+    }
+    while (j < n2) {
+        pData[k++] = R[j++];
+        extraMemoryAllocated += sizeof(int);
+    }
+
+    free(L);
+    free(R);
 }
 
 // parses input file to an integer array
